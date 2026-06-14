@@ -6,8 +6,15 @@ const DATA_FILE = path.join(__dirname, 'data.json');
 
 function load() {
   if (!fs.existsSync(DATA_FILE)) return { users: {}, messages: [] };
-  try { return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); }
-  catch { return { users: {}, messages: [] }; }
+  try {
+    const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    return {
+      users: (data && typeof data === 'object' && data.users && typeof data.users === 'object') ? data.users : {},
+      messages: Array.isArray(data && data.messages) ? data.messages : []
+    };
+  } catch {
+    return { users: {}, messages: [] };
+  }
 }
 
 function save(data) {

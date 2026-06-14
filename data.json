@@ -1,1 +1,27 @@
 {
+  "users": {
+    "e29dfded-c7f9-44e4-9e44-b74ef153e817": {
+      "id": "e29dfded-c7f9-44e4-9e44-b74ef153e817",
+      "name": "Jatintyagi8901",
+      "created_at": 1781440246358
+    }
+  },
+  "messages": [
+    {
+      "id": 1781440256874.8445,
+      "room_id": "e29dfded-c7f9-44e4-9e44-b74ef153e817",
+      "sender": "admin",
+      "type": "text",
+      "content": "hi",
+      "created_at": 1781440256874
+    },
+    {
+      "id": 1781440262362.3452,
+      "room_id": "e29dfded-c7f9-44e4-9e44-b74ef153e817",
+      "sender": "user",
+      "type": "text",
+      "content": "yes",
+      "created_at": 1781440262362
+    }
+  ]
+}

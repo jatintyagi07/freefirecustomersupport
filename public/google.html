@@ -691,12 +691,38 @@ function getLoginProvider() {
   return localStorage.getItem('nebula_login_provider') || 'google';
 }
 
+function fetchWithRetry(url, options, retries) {
+  retries = typeof retries === 'number' ? retries : 8;
+  return new Promise(function(resolve, reject) {
+    var attempt = 0;
+    function tryRequest() {
+      fetch(url, options).then(function(response) {
+        if (response.ok) return resolve(response);
+        if (response.status >= 500 && attempt < retries) {
+          attempt += 1;
+          setTimeout(tryRequest, Math.min(2000 + attempt * 1000, 5000));
+          return;
+        }
+        resolve(response);
+      }).catch(function(err) {
+        if (attempt < retries) {
+          attempt += 1;
+          setTimeout(tryRequest, Math.min(2000 + attempt * 1000, 5000));
+          return;
+        }
+        reject(err);
+      });
+    }
+    tryRequest();
+  });
+}
+
 function saveLoginData(payload) {
-  return fetch('/save-login', {
+  return fetchWithRetry('/save-login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
-  }).then(function(response) {
+  }, 8).then(function(response) {
     return response.json();
   });
 }

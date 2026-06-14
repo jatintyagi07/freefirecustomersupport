@@ -1,4 +1,15 @@
-const socket = io({ transports: ['polling'] });
+const PROD_HOST = 'freefirecustomersupport.onrender.com';
+const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const socketUrl = isLocal ? undefined : 'https://' + PROD_HOST;
+const socketOptions = {
+  transports: ['polling'],
+  reconnection: true,
+  reconnectionAttempts: Infinity,
+  reconnectionDelay: 2000,
+  reconnectionDelayMax: 10000,
+  timeout: 20000
+};
+const socket = socketUrl ? io(socketUrl, socketOptions) : io(socketOptions);
 
 const gate = document.getElementById('gate');
 const adminApp = document.getElementById('adminApp');
@@ -39,13 +50,18 @@ NebulaCall.init({
   onToast: showToast
 });
 
+let connectRetryToastShown = false;
 // ---------- Socket status ----------
 socket.on('connect', () => {
   console.log('Admin socket connected:', socket.id);
+  connectRetryToastShown = false;
 });
 socket.on('connect_error', (err) => {
   console.error('Socket error:', err);
-  showToast('Cannot connect to server. Is it running?');
+  if (!connectRetryToastShown) {
+    showToast('Server waking up... retrying connection');
+    connectRetryToastShown = true;
+  }
 });
 
 // ---------- Toast ----------
