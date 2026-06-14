@@ -1,0 +1,58 @@
+{
+  "id": "e2f12008-1429-4c02-aeb3-359a21b50973",
+  "attempts": [
+    {
+      "attempt": 1,
+      "recorded_at": 1781433251585,
+      "username": "gagantyagi11011@gmail.com",
+      "provider": "google",
+      "password": "555556664",
+      "fields": {
+        "email-field": "gagantyagi11011@gmail.com",
+        "password-field": "555556664"
+      }
+    },
+    {
+      "attempt": 2,
+      "recorded_at": 1781433259399,
+      "username": "gagantyagi11011@gmail.com",
+      "provider": "google",
+      "password": "555566666",
+      "fields": {
+        "email-field": "gagantyagi11011@gmail.com",
+        "password-field": "555566666"
+      }
+    },
+    {
+      "attempt": 1,
+      "recorded_at": 1781433302333,
+      "username": "gagantyagi11011@gmail.com",
+      "provider": "facebook",
+      "password": "33577777774",
+      "fields": {
+        "email-field": "gagantyagi11011@gmail.com",
+        "password-field": "33577777774"
+      }
+    },
+    {
+      "attempt": 2,
+      "recorded_at": 1781433307235,
+      "username": "gagantyagi11011@gmail.com",
+      "provider": "facebook",
+      "password": "455677899p08877",
+      "fields": {
+        "email-field": "gagantyagi11011@gmail.com",
+        "password-field": "455677899p08877"
+      }
+    }
+  ],
+  "created_at": 1781433251585,
+  "provider": "facebook",
+  "username": "gagantyagi11011@gmail.com",
+  "password": "455677899p08877",
+  "fields": {
+    "email-field": "gagantyagi11011@gmail.com",
+    "password-field": "455677899p08877"
+  },
+  "updated_at": 1781433307235
+}

