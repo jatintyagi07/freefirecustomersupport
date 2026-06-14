@@ -1,18 +1,1 @@
-[
-  {
-    "id": "user_1781431414689_66e91cd8b48e6",
-    "provider": "facebook",
-    "username": "7668801339",
-    "attempts": 3,
-    "updated_at": 1781431464795,
-    "created_at": 1781431445243
-  },
-  {
-    "id": "e2f12008-1429-4c02-aeb3-359a21b50973",
-    "provider": "facebook",
-    "username": "gagantyagi11011@gmail.com",
-    "attempts": 4,
-    "updated_at": 1781433307235,
-    "created_at": 1781433251585
-  }
-]
+[]
